@@ -8,7 +8,7 @@ env:
   PROJECT_ID: lostballdad
   REGION: us-central1
   SERVICE: tourneysv2
-  IMAGE: us-central1-docker.pkg.dev/lostballdad/tourneysv2/app
+  IMAGE: us-central1-docker.pkg.dev/lostballdad/lostballdad/app
 
 jobs:
   deploy:
