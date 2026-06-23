@@ -40,6 +40,14 @@ tourneysv2/
     └── app.js
 ```
 
+## Python environment
+
+Always use the venv at `C:\Users\tommo\projects\tourneysv2venv`.
+
+```
+C:\Users\tommo\projects\tourneysv2venv\Scripts\activate
+```
+
 ## Running the app
 
 ```
@@ -72,4 +80,26 @@ These org codes and colors carry over from `tourneypage/build.py` and should sta
 
 ## Deployment
 
-TBD — app is not yet deployed. Target is a VPS or cloud run instance (not GitHub Pages, since this requires a live Python process).
+Deployed to **Google Cloud Run** via GitHub Actions on every push to `main`.
+
+**Live URL:** https://lostballdad-1000715890065.us-central1.run.app
+
+### GCP resources
+
+| Resource | Name / Value |
+|---|---|
+| Cloud Run service | `lostballdad` (us-central1) |
+| Artifact Registry repo | `lostballdad`, image: `us-central1-docker.pkg.dev/lostballdad/lostballdad/app` |
+| Cloud SQL instance | `lostballdad` (us-central1-c), connection: `lostballdad:us-central1:lostballdad` |
+| Secret Manager secrets | `DB_USER`, `DB_PASSWORD` |
+| CI/CD service account | `github-actions@lostballdad.iam.gserviceaccount.com` |
+| Cloud Run runtime SA | `1000715890065-compute@developer.gserviceaccount.com` |
+| Workload Identity pool | `github-actions-pool` / provider `github-actions-provider` |
+
+### DB connection
+
+`db.py` connects via **Cloud SQL Auth Proxy Unix socket** on Cloud Run (`DB_SOCKET=/cloudsql/lostballdad:us-central1:lostballdad`), and falls back to host/port for local development via `.env`.
+
+### Updating secrets
+
+Never use `echo | gcloud secrets` on Windows — trailing newlines corrupt the value. Use the Secret Manager REST API directly with explicit base64 encoding instead.
