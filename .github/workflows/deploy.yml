@@ -44,4 +44,5 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --add-cloudsql-instances=lostballdad:us-central1:lostballdad \
-            --set-env-vars="DB_SOCKET=/cloudsql/lostballdad:us-central1:lostballdad,DB_NAME=tourneydatabase,DB_USER=${{ secrets.DB_USER }},DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+            --set-env-vars="DB_SOCKET=/cloudsql/lostballdad:us-central1:lostballdad,DB_NAME=tourneydatabase" \
+            --set-secrets="DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest"
