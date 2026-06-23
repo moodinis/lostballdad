@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Tournament Finder{% endblock %}</title>
+<link rel="stylesheet" href="/static/app.css">
+{% block head %}{% endblock %}
+</head>
+<body>
+<nav class="topnav">
+  <div class="brand">
+    <svg width="30" height="30" viewBox="0 0 34 34" fill="none">
+      <circle cx="17" cy="17" r="15" fill="#FFFDF8" stroke="#162338" stroke-width="2"/>
+      <path d="M6 11 C12 15, 12 19, 6 23" stroke="#BC5B39" stroke-width="1.4" fill="none" stroke-dasharray="2.2 2"/>
+      <path d="M28 11 C22 15, 22 19, 28 23" stroke="#BC5B39" stroke-width="1.4" fill="none" stroke-dasharray="2.2 2"/>
+    </svg>
+    <span>Tournament Finder</span>
+  </div>
+  <div class="nav-links">
+    <a href="/map?age=14">14U</a>
+    <a href="/map?age=12">12U</a>
+    <a href="/map?age=10">10U</a>
+  </div>
+</nav>
+{% block content %}{% endblock %}
+<script src="/static/app.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

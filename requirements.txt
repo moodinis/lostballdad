@@ -1,0 +1,4 @@
+cherrypy
+mysql-connector-python
+Jinja2
+python-dotenv

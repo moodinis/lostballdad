@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ age }}U Fall Tournaments{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
+{% endblock %}
+
+{% block content %}
+<header class="map-header">
+  <div class="map-title">
+    <h1>{{ age }}U Fall Tournaments</h1>
+    <p><span id="visibleCount">{{ total }}</span> tournaments &nbsp;&middot;&nbsp; Aug – Dec</p>
+  </div>
+  <div class="filters">
+    <div class="chips" id="orgChips">
+      {% for code, meta in org_meta.items() %}
+      <div class="chip" data-org="{{ code }}" style="--dot-color: {{ meta.color }}">
+        <span class="dot"></span>{{ meta.label }}
+      </div>
+      {% endfor %}
+    </div>
+    <div class="chips" id="monthChips">
+      {% for m in months %}
+      <div class="chip" data-month="{{ m }}">{{ m }}</div>
+      {% endfor %}
+    </div>
+  </div>
+</header>
+<div id="map"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+<script>
+const ORG_META = {{ org_meta_json | safe }};
+const events   = {{ events_json | safe }};
+const MONTHS   = {{ months | tojson }};
+</script>
+<script src="/static/map.js"></script>
+{% endblock %}
