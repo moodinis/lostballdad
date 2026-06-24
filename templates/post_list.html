@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if category == 'gear' %}Gear Reviews
+  {% elif category == 'guide' %}Guides
+  {% else %}All Posts
+  {% endif %} — Lost Ball Dad
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>
+    {% if category == 'gear' %}Gear Reviews
+    {% elif category == 'guide' %}Guides
+    {% else %}All Posts
+    {% endif %}
+  </h1>
+</div>
+
+<div class="cat-tabs">
+  <a href="/blog" class="cat-tab {% if not category %}active{% endif %}">All</a>
+  <a href="/blog?category=gear" class="cat-tab {% if category == 'gear' %}active{% endif %}">Gear</a>
+  <a href="/blog?category=guide" class="cat-tab {% if category == 'guide' %}active{% endif %}">Guides</a>
+  <a href="/blog?category=general" class="cat-tab {% if category == 'general' %}active{% endif %}">General</a>
+</div>
+
+{% if posts %}
+<div class="post-grid post-grid-2col">
+  {% for post in posts %}
+  <a href="/blog/{{ post.slug }}" class="post-card">
+    <span class="category-badge category-{{ post.category }}">{{ post.category | capitalize }}</span>
+    <h3 class="post-card-title">{{ post.title }}</h3>
+    {% if post.excerpt %}
+    <p class="post-card-excerpt">{{ post.excerpt }}</p>
+    {% endif %}
+    <p class="post-meta">{{ post.published_at.strftime('%B %-d, %Y') if post.published_at else '' }}</p>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty-state">No posts yet in this category. Check back soon!</p>
+{% endif %}
+{% endblock %}

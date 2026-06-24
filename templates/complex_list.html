@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Complex Reviews — Lost Ball Dad{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Complex Reviews</h1>
+</div>
+
+{% if complexes %}
+<div class="complexes-section">
+  <div class="post-grid">
+    {% for complex in complexes %}
+    <a href="/complexes/{{ complex.slug }}" class="complex-card">
+      <h3 class="post-card-title">{{ complex.name }}</h3>
+      <p class="complex-location">{{ complex.city }}, {{ complex.state }}</p>
+      {% if complex.rating %}
+      <div class="stars" aria-label="{{ complex.rating }} out of 5 stars">
+        {% for i in range(1, 6) %}
+          {% if i <= complex.rating %}<span class="star filled">&#9733;</span>
+          {% else %}<span class="star empty">&#9734;</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if complex.excerpt %}
+      <p class="post-card-excerpt">{{ complex.excerpt }}</p>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<p class="empty-state">No complex reviews yet. Check back soon!</p>
+{% endif %}
+{% endblock %}

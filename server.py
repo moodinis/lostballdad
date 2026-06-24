@@ -4,6 +4,7 @@ import sys
 from datetime import date
 
 import cherrypy
+import markdown as md_lib
 from jinja2 import Environment, FileSystemLoader
 
 from db import get_conn
@@ -69,10 +70,179 @@ def fetch_events(age=14):
     return events
 
 
-class App:
+def fetch_recent_posts(limit=6):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT title, slug, excerpt, category, published_at
+        FROM posts
+        WHERE published_at <= NOW()
+        ORDER BY published_at DESC
+        LIMIT %s
+    """, (limit,))
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    posts = []
+    for title, slug, excerpt, category, published_at in rows:
+        posts.append({
+            'title': title,
+            'slug': slug,
+            'excerpt': excerpt,
+            'category': category,
+            'published_at': published_at,
+        })
+    return posts
+
+
+def fetch_posts(category=None):
+    conn = get_conn()
+    cur = conn.cursor()
+    if category:
+        cur.execute("""
+            SELECT title, slug, excerpt, category, published_at
+            FROM posts
+            WHERE published_at <= NOW() AND category = %s
+            ORDER BY published_at DESC
+        """, (category,))
+    else:
+        cur.execute("""
+            SELECT title, slug, excerpt, category, published_at
+            FROM posts
+            WHERE published_at <= NOW()
+            ORDER BY published_at DESC
+        """)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    posts = []
+    for title, slug, excerpt, category, published_at in rows:
+        posts.append({
+            'title': title,
+            'slug': slug,
+            'excerpt': excerpt,
+            'category': category,
+            'published_at': published_at,
+        })
+    return posts
+
+
+def fetch_post(slug):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT title, slug, body, category, published_at
+        FROM posts
+        WHERE slug = %s AND published_at <= NOW()
+    """, (slug,))
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not row:
+        return None
+    title, slug, body, category, published_at = row
+    return {
+        'title': title,
+        'slug': slug,
+        'body': body,
+        'category': category,
+        'published_at': published_at,
+    }
+
+
+def fetch_complexes():
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT name, slug, city, state, rating, excerpt
+        FROM complexes
+        WHERE published_at <= NOW()
+        ORDER BY name
+    """)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    complexes = []
+    for name, slug, city, state, rating, excerpt in rows:
+        complexes.append({
+            'name': name,
+            'slug': slug,
+            'city': city,
+            'state': state,
+            'rating': rating,
+            'excerpt': excerpt,
+        })
+    return complexes
+
+
+def fetch_complex(slug):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT name, slug, city, state, rating, body, published_at
+        FROM complexes
+        WHERE slug = %s AND published_at <= NOW()
+    """, (slug,))
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not row:
+        return None
+    name, slug, city, state, rating, body, published_at = row
+    return {
+        'name': name,
+        'slug': slug,
+        'city': city,
+        'state': state,
+        'rating': rating,
+        'body': body,
+        'published_at': published_at,
+    }
+
+
+class Blog:
+    @cherrypy.expose
+    def index(self, category=None):
+        posts = fetch_posts(category)
+        tmpl = jinja.get_template('post_list.html')
+        return tmpl.render(posts=posts, category=category)
+
+    @cherrypy.expose
+    def default(self, slug):
+        post = fetch_post(slug)
+        if not post:
+            raise cherrypy.HTTPError(404)
+        body_html = md_lib.markdown(post['body'] or '', extensions=['extra'])
+        tmpl = jinja.get_template('post.html')
+        return tmpl.render(post=post, body_html=body_html)
+
+
+class Complexes:
     @cherrypy.expose
     def index(self):
-        raise cherrypy.HTTPRedirect('/map')
+        complexes = fetch_complexes()
+        tmpl = jinja.get_template('complex_list.html')
+        return tmpl.render(complexes=complexes)
+
+    @cherrypy.expose
+    def default(self, slug):
+        complex_ = fetch_complex(slug)
+        if not complex_:
+            raise cherrypy.HTTPError(404)
+        body_html = md_lib.markdown(complex_['body'] or '', extensions=['extra'])
+        tmpl = jinja.get_template('complex.html')
+        return tmpl.render(complex=complex_, body_html=body_html)
+
+
+class App:
+    blog = Blog()
+    complexes = Complexes()
+
+    @cherrypy.expose
+    def index(self):
+        recent_posts = fetch_recent_posts(6)
+        tmpl = jinja.get_template('home.html')
+        return tmpl.render(recent_posts=recent_posts)
 
     @cherrypy.expose
     def map(self, age='14'):

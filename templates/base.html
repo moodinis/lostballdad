@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{% block title %}Tournament Finder{% endblock %}</title>
+<title>{% block title %}Lost Ball Dad{% endblock %}</title>
 <link rel="stylesheet" href="/static/app.css">
 {% block head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 <nav class="topnav">
   <div class="brand">
     <svg width="30" height="30" viewBox="0 0 34 34" fill="none">
@@ -15,12 +15,13 @@
       <path d="M6 11 C12 15, 12 19, 6 23" stroke="#BC5B39" stroke-width="1.4" fill="none" stroke-dasharray="2.2 2"/>
       <path d="M28 11 C22 15, 22 19, 28 23" stroke="#BC5B39" stroke-width="1.4" fill="none" stroke-dasharray="2.2 2"/>
     </svg>
-    <span>Tournament Finder</span>
+    <span>Lost Ball Dad</span>
   </div>
   <div class="nav-links">
-    <a href="/map?age=14">14U</a>
-    <a href="/map?age=12">12U</a>
-    <a href="/map?age=10">10U</a>
+    <a href="/map?age=14">Tournaments</a>
+    <a href="/blog?category=gear">Gear</a>
+    <a href="/complexes">Complexes</a>
+    <a href="/blog?category=guide">Guides</a>
   </div>
 </nav>
 {% block content %}{% endblock %}

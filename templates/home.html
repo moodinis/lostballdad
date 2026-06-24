@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Lost Ball Dad — Travel Baseball for Parents{% endblock %}
+
+{% block body_class %}home{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="hero-inner">
+    <h1 class="hero-title">Lost Ball Dad</h1>
+    <p class="hero-tagline">The travel baseball resource for parents who've been there.</p>
+    <div class="hero-actions">
+      <a href="/map?age=14" class="btn">Find Tournaments</a>
+      <a href="/blog" class="btn btn-outline">Read the Blog</a>
+    </div>
+  </div>
+</section>
+
+<section class="posts-section">
+  <div class="section-header">
+    <h2>Latest from the Blog</h2>
+    <a href="/blog" class="view-all">View all posts &rarr;</a>
+  </div>
+
+  {% if recent_posts %}
+  <div class="post-grid">
+    {% for post in recent_posts %}
+    <a href="/blog/{{ post.slug }}" class="post-card">
+      <span class="category-badge category-{{ post.category }}">{{ post.category | capitalize }}</span>
+      <h3 class="post-card-title">{{ post.title }}</h3>
+      {% if post.excerpt %}
+      <p class="post-card-excerpt">{{ post.excerpt }}</p>
+      {% endif %}
+      <p class="post-meta">{{ post.published_at.strftime('%B %-d, %Y') if post.published_at else '' }}</p>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-state">Posts are coming soon. Check back shortly!</p>
+  {% endif %}
+</section>
+{% endblock %}

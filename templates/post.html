@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} — Lost Ball Dad{% endblock %}
+
+{% block content %}
+<div class="article-wrap">
+  <a href="/blog" class="back-link">&larr; Back to Blog</a>
+  <article class="article">
+    <span class="category-badge category-{{ post.category }}">{{ post.category | capitalize }}</span>
+    <h1 class="article-title">{{ post.title }}</h1>
+    <p class="post-meta">{{ post.published_at.strftime('%B %-d, %Y') if post.published_at else '' }}</p>
+    <div class="prose">
+      {{ body_html | safe }}
+    </div>
+  </article>
+  <a href="/blog" class="back-link">&larr; Back to Blog</a>
+</div>
+{% endblock %}
