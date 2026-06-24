@@ -13,6 +13,11 @@
   <div class="map-title">
     <h1>{{ age }}U Fall Tournaments</h1>
     <p><span id="visibleCount">{{ total }}</span> tournaments &nbsp;&middot;&nbsp; Aug – Dec</p>
+    <div class="age-tabs">
+      {% for a in [10, 12, 14] %}
+      <a href="/map?age={{ a }}" class="age-tab{% if a == age %} active{% endif %}">{{ a }}U</a>
+      {% endfor %}
+    </div>
   </div>
   <div class="filters">
     <div class="chips" id="orgChips">

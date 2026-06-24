@@ -173,6 +173,19 @@ html, body {
   .chip { font-size: 11px; padding: 4px 10px 4px 8px; }
 }
 
+.age-tabs { display: flex; gap: 6px; margin-top: 6px; }
+.age-tab {
+  text-decoration: none;
+  font-size: 12px; font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+  transition: all 0.15s;
+}
+.age-tab:hover { background: var(--line); }
+.age-tab.active { background: var(--ink); color: var(--paper); }
+
 /* ── Home page hero ─────────────────────────────────────────── */
 .page-hero {
   background: var(--navy);
