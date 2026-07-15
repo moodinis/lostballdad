@@ -235,14 +235,9 @@ class Complexes:
 
 
 class App:
-    blog = Blog()
-    complexes = Complexes()
-
     @cherrypy.expose
-    def index(self):
-        recent_posts = fetch_recent_posts(6)
-        tmpl = jinja.get_template('home.html')
-        return tmpl.render(recent_posts=recent_posts)
+    def index(self, age='14'):
+        return self.map(age=age)
 
     @cherrypy.expose
     def map(self, age='14'):
