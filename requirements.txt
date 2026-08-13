@@ -3,3 +3,6 @@ mysql-connector-python
 Jinja2
 python-dotenv
 markdown
+bcrypt
+authlib
+requests

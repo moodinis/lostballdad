@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Verify Your Email – Lost Ball Dad{% endblock %}
+{% block content %}
+<div class="auth-section">
+  <div class="auth-card">
+    <h1>Check Your Email</h1>
+    <p>We'd normally send a verification link to your inbox now.</p>
+    <p class="auth-dev-note">
+      Email sending isn't wired up yet, so here's the link directly (dev mode):<br>
+      <a href="{{ verify_link }}">{{ verify_link }}</a>
+    </p>
+    <a class="btn" href="{{ next or '/' }}">Continue</a>
+  </div>
+</div>
+{% endblock %}

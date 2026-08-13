@@ -20,8 +20,28 @@
   </div>
   <div class="nav-links">
     <a href="/?age=14">Tournaments</a>
+    {% if user %}
+      {% if user.role == 'admin' %}<a href="/admin">Admin</a>{% endif %}
+      <span class="nav-user">{{ user.name }}</span>
+      <form method="post" action="/logout" class="nav-logout-form">
+        <input type="hidden" name="csrf_token" value="{{ get_csrf_token() }}">
+        <button type="submit" class="nav-logout-btn">Log Out</button>
+      </form>
+    {% else %}
+      <a href="/login">Log In</a>
+      <a href="/register">Register</a>
+    {% endif %}
   </div>
 </nav>
+{% if user and not user.email_verified_at %}
+<div class="verify-banner">
+  Please verify your email address.
+  <form method="post" action="/resend-verification" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ get_csrf_token() }}">
+    <button type="submit" class="link-btn">Resend verification link</button>
+  </form>
+</div>
+{% endif %}
 {% block content %}{% endblock %}
 <script src="/static/app.js"></script>
 {% block scripts %}{% endblock %}

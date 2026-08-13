@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Verify Your Email – Lost Ball Dad{% endblock %}
+{% block content %}
+<div class="auth-section">
+  <div class="auth-card">
+    {% if ok %}
+      <h1>Email Verified</h1>
+      <p>Your email has been verified. Thanks!</p>
+    {% else %}
+      <h1>Link Expired or Invalid</h1>
+      <p>That verification link is no longer valid. You can request a new one below.</p>
+      <form method="post" action="/resend-verification">
+        <input type="hidden" name="csrf_token" value="{{ get_csrf_token() }}">
+        <button type="submit" class="btn">Resend Verification Link</button>
+      </form>
+    {% endif %}
+    <p class="auth-alt"><a href="/">Back to Tournaments</a></p>
+  </div>
+</div>
+{% endblock %}

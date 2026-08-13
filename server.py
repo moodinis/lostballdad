@@ -7,6 +7,8 @@ import cherrypy
 import markdown as md_lib
 from jinja2 import Environment, FileSystemLoader
 
+import auth
+import oauth_google
 from db import get_conn
 
 ORG_META = {
@@ -35,6 +37,18 @@ MONTHS = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 MONTH_ABBR = {8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'}
 
 jinja = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
+jinja.globals['get_csrf_token'] = auth.get_csrf_token
+
+
+def render(template_name, **ctx):
+    ctx.setdefault('user', auth.current_user())
+    tmpl = jinja.get_template(template_name)
+    return tmpl.render(**ctx)
+
+
+def google_redirect_uri():
+    base_url = os.environ.get('APP_BASE_URL', 'http://localhost:8080')
+    return base_url.rstrip('/') + '/auth/google/callback'
 
 
 def fetch_events(age=14):
@@ -204,8 +218,7 @@ class Blog:
     @cherrypy.expose
     def index(self, category=None):
         posts = fetch_posts(category)
-        tmpl = jinja.get_template('post_list.html')
-        return tmpl.render(posts=posts, category=category)
+        return render('post_list.html', posts=posts, category=category)
 
     @cherrypy.expose
     def default(self, slug):
@@ -213,16 +226,14 @@ class Blog:
         if not post:
             raise cherrypy.HTTPError(404)
         body_html = md_lib.markdown(post['body'] or '', extensions=['extra'])
-        tmpl = jinja.get_template('post.html')
-        return tmpl.render(post=post, body_html=body_html)
+        return render('post.html', post=post, body_html=body_html)
 
 
 class Complexes:
     @cherrypy.expose
     def index(self):
         complexes = fetch_complexes()
-        tmpl = jinja.get_template('complex_list.html')
-        return tmpl.render(complexes=complexes)
+        return render('complex_list.html', complexes=complexes)
 
     @cherrypy.expose
     def default(self, slug):
@@ -230,8 +241,7 @@ class Complexes:
         if not complex_:
             raise cherrypy.HTTPError(404)
         body_html = md_lib.markdown(complex_['body'] or '', extensions=['extra'])
-        tmpl = jinja.get_template('complex.html')
-        return tmpl.render(complex=complex_, body_html=body_html)
+        return render('complex.html', complex=complex_, body_html=body_html)
 
 
 class App:
@@ -246,8 +256,8 @@ class App:
         except ValueError:
             age = 14
         events = fetch_events(age)
-        tmpl = jinja.get_template('map.html')
-        return tmpl.render(
+        return render(
+            'map.html',
             events_json=json.dumps(events),
             org_meta_json=json.dumps(ORG_META),
             org_meta=ORG_META,
@@ -256,15 +266,115 @@ class App:
             total=len(events),
         )
 
+    @cherrypy.expose
+    def register(self, email=None, password=None, name=None, username=None, csrf_token=None, next='/'):
+        error = None
+        if cherrypy.request.method == 'POST':
+            auth.check_csrf(csrf_token)
+            if not email or not password or not name or not username:
+                error = 'All fields are required.'
+            elif len(password) < 8:
+                error = 'Password must be at least 8 characters.'
+            elif not auth.is_valid_username(username):
+                error = 'Username must be 3-20 characters: letters, numbers, or underscores.'
+            elif auth.get_user_by_username(username):
+                error = 'That username is already taken.'
+            elif auth.get_user_by_email(email):
+                error = 'An account with that email already exists.'
+            if not error:
+                user = auth.create_user(email, password, name, username)
+                auth.login_user(user)
+                token = auth.create_verification_token(user['id'])
+                verify_link = cherrypy.url(f'/verify-email?token={token}')
+                return render('verify_pending.html', verify_link=verify_link, next=next)
+        return render('register.html', error=error, email=email, name=name,
+                       username=username, next=next, csrf_token=auth.get_csrf_token())
+
+    @cherrypy.expose
+    def verify_email(self, token=None):
+        ok = auth.verify_email_token(token)
+        return render('verify_result.html', ok=ok)
+
+    @cherrypy.expose
+    @auth.require_login
+    def resend_verification(self, csrf_token=None):
+        auth.check_csrf(csrf_token)
+        user = auth.current_user()
+        if user['email_verified_at']:
+            raise cherrypy.HTTPRedirect('/')
+        token = auth.create_verification_token(user['id'])
+        verify_link = cherrypy.url(f'/verify-email?token={token}')
+        return render('verify_pending.html', verify_link=verify_link, next='/')
+
+    @cherrypy.expose
+    def login(self, email=None, password=None, csrf_token=None, next='/'):
+        error = None
+        if cherrypy.request.method == 'POST':
+            auth.check_csrf(csrf_token)
+            user = auth.get_user_by_email(email) if email else None
+            if not user or not auth.verify_password(password or '', user['password_hash']):
+                error = 'Invalid email or password.'
+            else:
+                auth.login_user(user)
+                raise cherrypy.HTTPRedirect(next or '/')
+        return render('login.html', error=error, email=email, next=next,
+                       csrf_token=auth.get_csrf_token())
+
+    @cherrypy.expose
+    def logout(self, csrf_token=None):
+        auth.check_csrf(csrf_token)
+        auth.logout_user()
+        raise cherrypy.HTTPRedirect('/')
+
+
+class GoogleAuth:
+    @cherrypy.expose
+    def index(self, next='/'):
+        redirect_uri = google_redirect_uri()
+        uri, state = oauth_google.get_google_auth_url(redirect_uri)
+        cherrypy.session['oauth_state'] = state
+        cherrypy.session['oauth_next'] = next
+        raise cherrypy.HTTPRedirect(uri)
+
+    @cherrypy.expose
+    def callback(self, code=None, state=None, error=None):
+        if error or not code:
+            raise cherrypy.HTTPRedirect('/login')
+        expected_state = cherrypy.session.get('oauth_state')
+        if not expected_state or state != expected_state:
+            raise cherrypy.HTTPError(400, 'Invalid OAuth state')
+        redirect_uri = google_redirect_uri()
+        authorization_response = cherrypy.url(qs=cherrypy.request.query_string)
+        google_user = oauth_google.fetch_google_user(redirect_uri, authorization_response, state)
+        user = auth.upsert_google_user(google_user['sub'], google_user['email'], google_user['name'])
+        auth.login_user(user)
+        next_url = cherrypy.session.pop('oauth_next', None) or '/'
+        raise cherrypy.HTTPRedirect(next_url)
+
+
+class Admin:
+    @cherrypy.expose
+    @auth.require_admin
+    def index(self):
+        return render('admin.html')
+
 
 if __name__ == '__main__':
     cherrypy.config.update({
         'server.socket_host': '0.0.0.0',
         'server.socket_port': 8080,
+        'tools.sessions.on': True,
+        'tools.sessions.storage_type': 'ram',
+        'tools.sessions.timeout': 60 * 24,
     })
-    cherrypy.quickstart(App(), '/', {
+    app = App()
+    app.admin = Admin()
+    cherrypy.tree.mount(app, '/', {
         '/static': {
             'tools.staticdir.on': True,
             'tools.staticdir.dir': os.path.join(os.path.dirname(__file__), 'static'),
         }
     })
+    cherrypy.tree.mount(GoogleAuth(), '/auth/google')
+    cherrypy.engine.start()
+    cherrypy.engine.block()
