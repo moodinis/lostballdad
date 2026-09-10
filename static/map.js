@@ -1,9 +1,8 @@
 const map = L.map('map', { scrollWheelZoom: true }).setView([37.8, -96], 4);
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors',
   maxZoom: 19,
-  subdomains: 'abcd',
 }).addTo(map);
 
 function makeClusterIcon(color) {
