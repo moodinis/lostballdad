@@ -39,7 +39,7 @@ ORG_CODES = {
 
 MONTH_ABBR = {i: m for i, m in enumerate(
     ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], 1)}
-AGES = [10, 12, 13, 14, 15, 16, 17, 18]
+AGES = [10, 11, 12, 13, 14, 15, 16, 17, 18]
 FALL_START_MONTH = 8  # Aug-Dec is "Fall"; Jan-Jul is "Spring/Summer"
 SHOW_FALL = False     # fall seasons hidden for now; flip to True to bring them back
 
