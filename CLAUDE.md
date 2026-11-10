@@ -72,6 +72,7 @@ These org codes and colors carry over from `tourneypage/build.py` and should sta
 | kcs    | KC Sports             | #7C3AED   |
 | sa     | Sports America        | #0891B2   |
 | ft     | Five Tool             | #DC2626   |
+| swwbc  | Southwest Wood Bat    | #8B5E3C   |
 
 ## Adding a new organizer
 

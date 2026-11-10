@@ -18,6 +18,7 @@ ORG_META = {
     'kcs':   {'label': 'KC Sports',             'color': '#7C3AED'},
     'sa':    {'label': 'Sports America',        'color': '#0891B2'},
     'ft':    {'label': 'Five Tool',             'color': '#DC2626'},
+    'swwbc': {'label': 'Southwest Wood Bat',    'color': '#8B5E3C'},
 }
 
 ORG_CODES = {
@@ -29,6 +30,7 @@ ORG_CODES = {
     'KC Sports':             'kcs',
     'Sports America':        'sa',
     'Five Tool':             'ft',
+    'Southwest Wood Bat Classics': 'swwbc',
 }
 
 MONTH_ABBR = {i: m for i, m in enumerate(
