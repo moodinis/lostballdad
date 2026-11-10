@@ -31,13 +31,54 @@ ORG_CODES = {
     'Five Tool':             'ft',
 }
 
-MONTHS = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-MONTH_ABBR = {8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'}
+MONTH_ABBR = {i: m for i, m in enumerate(
+    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], 1)}
+AGES = [10, 12, 13, 14, 15, 16, 17, 18]
+FALL_START_MONTH = 8  # Aug-Dec is "Fall"; Jan-Jul is "Spring/Summer"
+
+
+def season_of(d):
+    """Season key for a date, e.g. 'fall-2026' or 'summer-2027'."""
+    return f"{'fall' if d.month >= FALL_START_MONTH else 'summer'}-{d.year}"
+
+
+def season_label(key):
+    kind, year = key.split('-')
+    return f"{'Fall' if kind == 'fall' else 'Spring/Summer'} {year}"
+
+
+def season_range(key):
+    """(first_day, last_day) for a season key."""
+    kind, year = key.split('-')
+    year = int(year)
+    if kind == 'fall':
+        return date(year, FALL_START_MONTH, 1), date(year, 12, 31)
+    return date(year, 1, 1), date(year, FALL_START_MONTH - 1, 31)
+
+
+def fetch_seasons():
+    """Seasons that are not over yet (in order), plus the default (the earliest of them)."""
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT start_date, end_date FROM tournaments WHERE start_date IS NOT NULL")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    last_end = {}
+    for start, end in rows:
+        key = season_of(start)
+        last_end[key] = max(last_end.get(key, start), end or start)
+    seasons = sorted(last_end, key=lambda k: season_range(k)[0])
+    today = date.today()
+    # Hide finished seasons; if everything is in the past, keep just the latest one.
+    seasons = [k for k in seasons if last_end[k] >= today] or seasons[-1:]
+    return seasons, (seasons[0] if seasons else None)
 
 jinja = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
 
 
-def fetch_events(age=14):
+def fetch_events(age, season):
+    first, last = season_range(season)
     fmt = '%b %#d' if sys.platform == 'win32' else '%b %-d'
     conn = get_conn()
     cur = conn.cursor()
@@ -47,9 +88,9 @@ def fetch_events(age=14):
         FROM tournaments t
         JOIN organizers o ON t.organizer_id = o.id
         WHERE t.start_age <= %s AND t.end_age >= %s
-          AND MONTH(t.start_date) BETWEEN 8 AND 12
+          AND t.start_date BETWEEN %s AND %s
         ORDER BY t.start_date
-    """, (age, age))
+    """, (age, age, first, last))
     events = []
     for name, org_name, city, state, start, end, link, lat, lng in cur.fetchall():
         org = ORG_CODES.get(org_name, 'pg')
@@ -236,23 +277,31 @@ class Complexes:
 
 class App:
     @cherrypy.expose
-    def index(self, age='14'):
-        return self.map(age=age)
+    def index(self, age='14', season=None):
+        return self.map(age=age, season=season)
 
     @cherrypy.expose
-    def map(self, age='14'):
+    def map(self, age='14', season=None):
         try:
             age = int(age)
         except ValueError:
             age = 14
-        events = fetch_events(age)
+        seasons, default_season = fetch_seasons()
+        if season not in seasons:
+            season = default_season
+        events = fetch_events(age, season) if season else []
+        months = list(dict.fromkeys(e['month'] for e in events))
         tmpl = jinja.get_template('map.html')
         return tmpl.render(
             events_json=json.dumps(events),
             org_meta_json=json.dumps(ORG_META),
             org_meta=ORG_META,
-            months=MONTHS,
+            months=months,
             age=age,
+            ages=AGES,
+            season=season,
+            seasons=[(k, season_label(k)) for k in seasons],
+            season_name=season_label(season) if season else '',
             total=len(events),
         )
 

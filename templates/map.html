@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ age }}U Fall Tournaments{% endblock %}
+{% block title %}{{ age }}U {{ season_name }} Tournaments{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
@@ -11,11 +11,16 @@
 {% block content %}
 <header class="map-header">
   <div class="map-title">
-    <h1>{{ age }}U Fall Tournaments</h1>
-    <p><span id="visibleCount">{{ total }}</span> tournaments &nbsp;&middot;&nbsp; Aug – Dec</p>
+    <h1>{{ age }}U {{ season_name }} Tournaments</h1>
+    <p><span id="visibleCount">{{ total }}</span> tournaments{% if months %} &nbsp;&middot;&nbsp; {{ months[0] }} – {{ months[-1] }}{% endif %}</p>
     <div class="age-tabs">
-      {% for a in [10, 12, 14] %}
-      <a href="/map?age={{ a }}" class="age-tab{% if a == age %} active{% endif %}">{{ a }}U</a>
+      {% for key, label in seasons %}
+      <a href="/map?age={{ age }}&amp;season={{ key }}" class="age-tab{% if key == season %} active{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </div>
+    <div class="age-tabs">
+      {% for a in ages %}
+      <a href="/map?age={{ a }}&amp;season={{ season }}" class="age-tab{% if a == age %} active{% endif %}">{{ a }}U</a>
       {% endfor %}
     </div>
   </div>

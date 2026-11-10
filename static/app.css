@@ -173,7 +173,7 @@ html, body {
   .chip { font-size: 11px; padding: 4px 10px 4px 8px; }
 }
 
-.age-tabs { display: flex; gap: 6px; margin-top: 6px; }
+.age-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .age-tab {
   text-decoration: none;
   font-size: 12px; font-weight: 700;
