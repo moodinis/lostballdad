@@ -32,20 +32,25 @@ tourneysv2/
 ├── requirements.txt
 ├── .env                # DB credentials (gitignored)
 ├── .env.example        # Template for credentials
+├── tools/
+│   ├── geocode.py      # Fill lat/lng for a draft CSV (OpenStreetMap Nominatim)
+│   └── import_csv.py   # Insert a CSV of tournaments into the DB
 ├── templates/
 │   ├── base.html       # Base layout with header/nav
 │   └── map.html        # Main map view (extends base)
 └── static/
     ├── app.css
-    └── app.js
+    ├── app.js
+    └── map.js          # Map, clustering and chip filters
 ```
 
 ## Python environment
 
-Always use the venv at `D:\projects\tourneysv2venv`.
+The project lives on the Ubuntu box at `/home/lenovo-cc/projects/tourneysv2`. Always use the venv at `/home/lenovo-cc/projects/tourneysv2venv`.
 
 ```
-D:\projects\tourneysv2venv\Scripts\activate
+python3 -m venv /home/lenovo-cc/projects/tourneysv2venv   # first time only
+source /home/lenovo-cc/projects/tourneysv2venv/bin/activate
 ```
 
 ## Running the app
@@ -56,7 +61,20 @@ cp .env.example .env   # then fill in credentials
 python server.py
 ```
 
-App runs at `http://localhost:8080` by default.
+App runs at `http://localhost:8080` by default. Local runs connect to Cloud SQL's public IP, so the machine's public IP must be in the instance's authorized networks.
+
+## Adding tournaments in bulk
+
+Tournaments are mostly 2027 season data gathered from organizer sites (USSSA state sites `{st}baseball.usssa.com/events/`, Game 7, PG Nevada/Northwest, Triple Crown, CABA Colorado). Workflow:
+
+1. Build a CSV: `name,organizer,city,state,start_date,end_date,start_age,end_age,link,geo` (`geo` optional; see `tools/geocode.py`).
+   - `organizer` must match `organizers.name`. USSSA events directed by "Sports America" or KC Sports (Garrett Fortuna / "KC Sports"/"KCS" names) go under those organizers. Smaller organizers go under `Other` with the real organizer in parentheses in the name, e.g. `Frozen Rope Classic (Game 7)`.
+   - Skip softball and events entirely below 12U. If two rows share name + start date, append ` (City)` to both.
+   - Replace venue/region labels with a city: Scrap Yard→Conroe TX, MWC→Midwest City OK, Kentuckiana→Louisville area (geo `Louisville, KY`), Greater New Orleans Area→New Orleans area, Eastern Jackson County MO (geo `Blue Springs, MO`), Tri Cities TN (geo `Johnson City, TN`), Sprowls Horizon Park→Pinellas Park FL, Bob Lewis Park NC→Candler NC.
+2. `python tools/geocode.py draft.csv` → writes `draft_geo.csv`; review for wrong same-named towns.
+3. `python tools/import_csv.py draft_geo.csv` → inserts, skipping name+start_date duplicates.
+
+Fall seasons are hidden on the map (`SHOW_FALL = False` in `server.py`); org chips only show organizers with events in the current view.
 
 ## Organizer metadata
 
@@ -105,4 +123,4 @@ Deployed to **Google Cloud Run** via GitHub Actions on every push to `main`.
 
 ### Updating secrets
 
-Never use `echo | gcloud secrets` on Windows — trailing newlines corrupt the value. Use the Secret Manager REST API directly with explicit base64 encoding instead.
+Never use `echo | gcloud secrets` to set a value — the trailing newline corrupts it Use `printf '%s' "$VALUE" | gcloud secrets versions add NAME --data-file=-`, or the Secret Manager REST API with explicit base64 encoding.
