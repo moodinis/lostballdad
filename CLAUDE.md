@@ -123,4 +123,4 @@ Deployed to **Google Cloud Run** via GitHub Actions on every push to `main`.
 
 ### Updating secrets
 
-Never use `echo | gcloud secrets` to set a value — the trailing newline corrupts it Use `printf '%s' "$VALUE" | gcloud secrets versions add NAME --data-file=-`, or the Secret Manager REST API with explicit base64 encoding.
+Never use `echo | gcloud secrets` to set a value — the trailing newline corrupts it. Use `printf '%s' "$VALUE" | gcloud secrets versions add NAME --data-file=-`, or the Secret Manager REST API with explicit base64 encoding.
