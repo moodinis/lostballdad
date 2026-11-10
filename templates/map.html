@@ -13,11 +13,13 @@
   <div class="map-title">
     <h1>{{ age }}U {{ season_name }} Tournaments</h1>
     <p><span id="visibleCount">{{ total }}</span> tournaments{% if months %} &nbsp;&middot;&nbsp; {{ months[0] }} – {{ months[-1] }}{% endif %}</p>
+    {% if seasons|length > 1 %}
     <div class="age-tabs">
       {% for key, label in seasons %}
       <a href="/map?age={{ age }}&amp;season={{ key }}" class="age-tab{% if key == season %} active{% endif %}">{{ label }}</a>
       {% endfor %}
     </div>
+    {% endif %}
     <div class="age-tabs">
       {% for a in ages %}
       <a href="/map?age={{ a }}&amp;season={{ season }}" class="age-tab{% if a == age %} active{% endif %}">{{ a }}U</a>
