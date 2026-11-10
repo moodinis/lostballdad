@@ -46,11 +46,11 @@ tourneysv2/
 
 ## Python environment
 
-The project lives on the Ubuntu box at `/home/lenovo-cc/projects/tourneysv2`. Always use the venv at `/home/lenovo-cc/projects/tourneysv2venv`.
+The project lives on the Ubuntu box (SSH alias `lenovo-cc`, user `cctom`) at `/home/cctom/projects/tourneysv2`. Always use the venv at `/home/cctom/projects/tourneysv2venv`.
 
 ```
-python3 -m venv /home/lenovo-cc/projects/tourneysv2venv   # first time only
-source /home/lenovo-cc/projects/tourneysv2venv/bin/activate
+python3 -m venv /home/cctom/projects/tourneysv2venv   # first time only
+source /home/cctom/projects/tourneysv2venv/bin/activate
 ```
 
 ## Running the app
