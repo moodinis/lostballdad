@@ -57,7 +57,7 @@ def season_range(key):
 
 
 def fetch_seasons():
-    """Seasons that are not over yet (in order), plus the default (the earliest of them)."""
+    """Seasons that are not over yet (in order), plus the default (the latest of them)."""
     conn = get_conn()
     cur = conn.cursor()
     cur.execute("SELECT start_date, end_date FROM tournaments WHERE start_date IS NOT NULL")
@@ -72,7 +72,7 @@ def fetch_seasons():
     today = date.today()
     # Hide finished seasons; if everything is in the past, keep just the latest one.
     seasons = [k for k in seasons if last_end[k] >= today] or seasons[-1:]
-    return seasons, (seasons[0] if seasons else None)
+    return seasons, (seasons[-1] if seasons else None)
 
 jinja = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
 
