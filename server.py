@@ -19,6 +19,7 @@ ORG_META = {
     'sa':    {'label': 'Sports America',        'color': '#0891B2'},
     'ft':    {'label': 'Five Tool',             'color': '#DC2626'},
     'swwbc': {'label': 'Southwest Wood Bat',    'color': '#8B5E3C'},
+    'other': {'label': 'Other',                 'color': '#6B7280'},
 }
 
 ORG_CODES = {
@@ -31,6 +32,7 @@ ORG_CODES = {
     'Sports America':        'sa',
     'Five Tool':             'ft',
     'Southwest Wood Bat Classics': 'swwbc',
+    'Other':                 'other',
 }
 
 MONTH_ABBR = {i: m for i, m in enumerate(
@@ -98,7 +100,7 @@ def fetch_events(age, season):
     """, (age, age, first, last))
     events = []
     for name, org_name, city, state, start, end, link, lat, lng in cur.fetchall():
-        org = ORG_CODES.get(org_name, 'pg')
+        org = ORG_CODES.get(org_name, 'other')
         month = MONTH_ABBR.get(start.month, '')
         if start == end:
             dates = f"{start.strftime(fmt)}, {start.year}"
@@ -296,11 +298,13 @@ class App:
             season = default_season
         events = fetch_events(age, season) if season else []
         months = list(dict.fromkeys(e['month'] for e in events))
+        present = {e['org'] for e in events}
+        org_meta = {code: meta for code, meta in ORG_META.items() if code in present}
         tmpl = jinja.get_template('map.html')
         return tmpl.render(
             events_json=json.dumps(events),
             org_meta_json=json.dumps(ORG_META),
-            org_meta=ORG_META,
+            org_meta=org_meta,
             months=months,
             age=age,
             ages=AGES,

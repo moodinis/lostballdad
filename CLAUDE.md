@@ -73,6 +73,7 @@ These org codes and colors carry over from `tourneypage/build.py` and should sta
 | sa     | Sports America        | #0891B2   |
 | ft     | Five Tool             | #DC2626   |
 | swwbc  | Southwest Wood Bat    | #8B5E3C   |
+| other  | Other (catch-all; put the real organizer in the event name) | #6B7280 |
 
 ## Adding a new organizer
 
