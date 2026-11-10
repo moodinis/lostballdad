@@ -42,10 +42,10 @@ tourneysv2/
 
 ## Python environment
 
-Always use the venv at `C:\Users\tommo\projects\tourneysv2venv`.
+Always use the venv at `D:\projects\tourneysv2venv`.
 
 ```
-C:\Users\tommo\projects\tourneysv2venv\Scripts\activate
+D:\projects\tourneysv2venv\Scripts\activate
 ```
 
 ## Running the app
