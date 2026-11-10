@@ -5,28 +5,35 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
 }).addTo(map);
 
-function makeClusterIcon(color) {
-  return function(cluster) {
-    const n = cluster.getChildCount();
-    const size = n < 6 ? 32 : n < 14 ? 38 : 46;
-    return L.divIcon({
-      html: `<div class="cluster-icon" style="width:${size}px;height:${size}px;background:${color};">${n}</div>`,
-      className: '',
-      iconSize: [size, size],
-    });
-  };
+// One cluster group for all organizers, so events at the same spot share a cluster instead of
+// separate per-org clusters stacking on top of each other. Mixed clusters are drawn as a ring
+// split by organizer color.
+function clusterIcon(cluster) {
+  const n = cluster.getChildCount();
+  const size = n < 6 ? 32 : n < 14 ? 38 : 46;
+  const counts = {};
+  cluster.getAllChildMarkers().forEach(m => { counts[m.options.org] = (counts[m.options.org] || 0) + 1; });
+  let deg = 0;
+  const stops = Object.entries(counts).map(([org, c]) => {
+    const color = ORG_META[org]?.color ?? '#888';
+    const from = deg;
+    deg += (c / n) * 360;
+    return `${color} ${from}deg ${deg}deg`;
+  });
+  return L.divIcon({
+    html: `<div class="cluster-icon" style="width:${size}px;height:${size}px;background:conic-gradient(${stops.join(',')});"><span>${n}</span></div>`,
+    className: '',
+    iconSize: [size, size],
+  });
 }
 
-const clusterGroups = {};
-Object.entries(ORG_META).forEach(([org, meta]) => {
-  clusterGroups[org] = L.markerClusterGroup({
-    iconCreateFunction: makeClusterIcon(meta.color),
-    spiderfyOnMaxZoom: true,
-    showCoverageOnHover: false,
-    maxClusterRadius: 40,
-  });
-  map.addLayer(clusterGroups[org]);
+const clusterGroup = L.markerClusterGroup({
+  iconCreateFunction: clusterIcon,
+  spiderfyOnMaxZoom: true,
+  showCoverageOnHover: false,
+  maxClusterRadius: 40,
 });
+map.addLayer(clusterGroup);
 
 const markers = events.map(ev => {
   const color = ORG_META[ev.org]?.color ?? '#888';
@@ -36,7 +43,7 @@ const markers = events.map(ev => {
     iconSize: [16, 16],
     iconAnchor: [8, 8],
   });
-  const m = L.marker([ev.lat, ev.lng], { icon });
+  const m = L.marker([ev.lat, ev.lng], { icon, org: ev.org });
   m.bindPopup(`
     <div class="tip-card" style="border-left-color:${color};">
       <div class="org">${ORG_META[ev.org]?.label ?? ev.org}</div>
@@ -56,14 +63,10 @@ const activeOrgs   = new Set(Object.keys(ORG_META));
 const activeMonths = new Set(MONTHS);
 
 function rebuild() {
-  Object.values(clusterGroups).forEach(g => g.clearLayers());
-  let count = 0;
-  events.forEach((ev, i) => {
-    if (activeOrgs.has(ev.org) && activeMonths.has(ev.month)) {
-      clusterGroups[ev.org].addLayer(markers[i]);
-      count++;
-    }
-  });
+  clusterGroup.clearLayers();
+  const visible = markers.filter((m, i) => activeOrgs.has(events[i].org) && activeMonths.has(events[i].month));
+  clusterGroup.addLayers(visible);
+  const count = visible.length;
   document.getElementById('visibleCount').textContent = count;
 }
 
