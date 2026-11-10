@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import sys
@@ -84,6 +85,16 @@ def fetch_seasons():
     return seasons, (seasons[-1] if seasons else None)
 
 jinja = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
+STATIC_DIR = os.path.join(os.path.dirname(__file__), 'static')
+
+
+def static_url(path):
+    """/static/<path>?v=<content hash>, so browsers refetch a file only when it changes."""
+    with open(os.path.join(STATIC_DIR, path), 'rb') as f:
+        return f'/static/{path}?v={hashlib.md5(f.read()).hexdigest()[:10]}'
+
+
+jinja.globals['static_url'] = static_url
 
 
 def fetch_events(age, season):
@@ -325,6 +336,6 @@ if __name__ == '__main__':
     cherrypy.quickstart(App(), '/', {
         '/static': {
             'tools.staticdir.on': True,
-            'tools.staticdir.dir': os.path.join(os.path.dirname(__file__), 'static'),
+            'tools.staticdir.dir': STATIC_DIR,
         }
     })

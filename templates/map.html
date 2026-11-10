@@ -52,5 +52,5 @@ const ORG_META = {{ org_meta_json | safe }};
 const events   = {{ events_json | safe }};
 const MONTHS   = {{ months | tojson }};
 </script>
-<script src="/static/map.js"></script>
+<script src="{{ static_url('map.js') }}"></script>
 {% endblock %}
