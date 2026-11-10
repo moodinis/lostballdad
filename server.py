@@ -19,6 +19,7 @@ ORG_META = {
     'sa':    {'label': 'Sports America',        'color': '#0891B2'},
     'ft':    {'label': 'Five Tool',             'color': '#DC2626'},
     'swwbc': {'label': 'Southwest Wood Bat',    'color': '#8B5E3C'},
+    'caba':  {'label': 'CABA',                  'color': '#DB2777'},
     'other': {'label': 'Other',                 'color': '#6B7280'},
 }
 
@@ -32,6 +33,7 @@ ORG_CODES = {
     'Sports America':        'sa',
     'Five Tool':             'ft',
     'Southwest Wood Bat Classics': 'swwbc',
+    'CABA':                  'caba',
     'Other':                 'other',
 }
 
