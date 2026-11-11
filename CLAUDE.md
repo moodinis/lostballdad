@@ -34,7 +34,8 @@ tourneysv2/
 ├── .env.example        # Template for credentials
 ├── tools/
 │   ├── geocode.py      # Fill lat/lng for a draft CSV (OpenStreetMap Nominatim)
-│   └── import_csv.py   # Insert a CSV of tournaments into the DB
+│   ├── import_csv.py   # Insert a CSV of tournaments into the DB
+│   └── scrapers/       # Per-organizer scrapers used for the 2027 load (see its README)
 ├── templates/
 │   ├── base.html       # Base layout with header/nav
 │   └── map.html        # Main map view (extends base)
@@ -73,6 +74,8 @@ Tournaments are mostly 2027 season data gathered from organizer sites (USSSA sta
    - Replace venue/region labels with a city: Scrap Yard→Conroe TX, MWC→Midwest City OK, Kentuckiana→Louisville area (geo `Louisville, KY`), Greater New Orleans Area→New Orleans area, Eastern Jackson County MO (geo `Blue Springs, MO`), Tri Cities TN (geo `Johnson City, TN`), Sprowls Horizon Park→Pinellas Park FL, Bob Lewis Park NC→Candler NC.
 2. `python tools/geocode.py draft.csv` → writes `draft_geo.csv`; review for wrong same-named towns.
 3. `python tools/import_csv.py draft_geo.csv` → inserts, skipping name+start_date duplicates.
+
+Per-organizer scrapers (USSSA, Game 7, GMB, PBR, NCS, Grand Slam, Triple Crown, Five Tool, Prospect Select/Wire, Ballparks of America, Perfect Game) live in `tools/scrapers/`; its README covers how each works, known gaps, and sites that block automated fetches.
 
 Fall seasons are hidden on the map (`SHOW_FALL = False` in `server.py`); org chips only show organizers with events in the current view.
 

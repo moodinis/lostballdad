@@ -1,0 +1,7 @@
+# scraper working files (raw pulls, drafts, cookie jars)
+*.csv
+*.html
+*.json
+*.jar
+*.log
+__pycache__/
